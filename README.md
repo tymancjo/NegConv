@@ -2,8 +2,23 @@
 
 Native macOS app for converting camera-scanned colour negatives (Nikon NEF, Canon CR2/CR3, Fujifilm RAF) into positives — developed on a Nikon D810 / D750. Non-destructive: every edit lives in a JSON sidecar next to the RAW file; roll-wide settings live in `NegConv Roll.json` in the roll folder.
 
-Spec and status: [`project_doc/NegConv_spec.md`](project_doc/NegConv_spec.md)
-How the conversion maths works (what each slider does): [`project_doc/NegConv_math.md`](project_doc/NegConv_math.md)
+> **A note before you start**
+>
+> NegConv was vibe-coded together with Claude (Anthropic's AI) and was built for my own film-scanning workflow. You're very welcome to use it, fork it or borrow ideas from it, but please keep in mind that I'm an electrical engineer, not a professional software developer :) It works well for me, but it comes with no warranty. Keep backups of your RAW files and expect the occasional rough edge.
+
+## Install
+1. Download the latest `NegConv-<version>-<build>.zip` from [Releases](../../releases) (Apple Silicon + Intel, macOS 14 or newer).
+2. Unzip it and drag **NegConv.app** to **Applications**.
+3. The app is not signed with an Apple Developer ID, so macOS will block it on first launch ("app is damaged" or "cannot be verified"). Remove the quarantine flag once in Terminal:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/NegConv.app
+   ```
+   Or, without Terminal: try to open the app, then go to **System Settings → Privacy & Security** and click **Open Anyway**.
+4. Open NegConv and choose a folder of RAW scans with **⌘O**.
+
+## Documentation
+- Spec and status: [`project_doc/NegConv_spec.md`](project_doc/NegConv_spec.md)
+- How the conversion maths works (what each slider does): [`project_doc/NegConv_math.md`](project_doc/NegConv_math.md)
 
 ## Build & run
 - Open `NegConv.xcodeproj` in Xcode 27.2+ and press ⌘R. Requires macOS 14+.
