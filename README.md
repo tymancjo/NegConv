@@ -6,6 +6,8 @@ Native macOS app for converting camera-scanned colour negatives (Nikon NEF, Cano
 >
 > NegConv was vibe-coded together with Claude (Anthropic's AI) and was built for my own film-scanning workflow. You're very welcome to use it, fork it or borrow ideas from it, but please keep in mind that I'm an electrical engineer, not a professional software developer :) It works well for me, but it comes with no warranty. Keep backups of your RAW files and expect the occasional rough edge.
 
+![App Window]("readmepic/app_window.png")
+
 ## Install
 1. Download the latest `NegConv-<version>-<build>.zip` from [Releases](../../releases) (Apple Silicon + Intel, macOS 14 or newer).
 2. Unzip it and drag **NegConv.app** to **Applications**.
