@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+.contact.jpg
+
+# Build output (release zips go to GitHub Releases instead)
+build/
+dist/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Local only
+backup/
+example_NEF/
+example_2/
+*~lock~*
+
+# RAW files and NegConv sidecars, wherever they are
+*.NEF
+*.nef
+*.CR2
+*.cr2
+*.CR3
+*.cr3
+*.RAF
+*.raf
+*.negconv.json
+NegConv Roll.json
