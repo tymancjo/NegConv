@@ -1,6 +1,6 @@
 # NegConv — macOS film negative converter (spec)
 
-_Last updated: 2026-11-23 · version 0.9 (build 9) · status: MVP 1 complete + Phase 2 (except B&W) · colour work: C1–C5 all done (see `NegConv_color_plan.md`) · 2026-11-17: colour mixer moved before Presence; inspector in workflow order; roll base + roll analysis; curves; v0.6: sharpening · v0.8: Canon/Fuji RAW · v0.9: grid view + thumbnails, Retag Exported Photos._
+_Last updated: 2026-11-23 · version 0.95 (build 10) · status: MVP 1 complete + Phase 2 (except B&W) · colour work: C1–C5 all done (see `NegConv_color_plan.md`) · 2026-11-17: colour mixer moved before Presence; inspector in workflow order; roll base + roll analysis; curves; v0.6: sharpening · v0.8: Canon/Fuji RAW · v0.9: grid view + thumbnails, Retag Exported Photos · v0.95: Capture One-style tool keys._
 
 ## Goal
 Native macOS app to convert camera-scanned film negatives (Nikon D810 / D750, 14-bit lossless NEF) into high-quality positives, with non-destructive editing.
@@ -93,7 +93,7 @@ Follows the order you work in, which mostly follows the pipeline: geometry befor
 | Space + drag pan in 1:1 | ✅ |
 | Copy / paste settings (selective, incl. point source), paste to whole roll | ✅ |
 | JSON sidecars (autosave, tolerant loading) + roll file | ✅ |
-| Release builds: 0.1, 0.2, 0.3 (roll analysis, curves, workflow-order inspector), 0.4 (before/after, clipping overlay, reference frame), 0.5 (shooting data in exports), 0.6 (sharpening), 0.8 (Canon/Fuji RAW), **0.9** (grid view, retag exports) | ✅ `./build_release.sh` → `dist/` |
+| Release builds: 0.1, 0.2, 0.3 (roll analysis, curves, workflow-order inspector), 0.4 (before/after, clipping overlay, reference frame), 0.5 (shooting data in exports), 0.6 (sharpening), 0.8 (Canon/Fuji RAW), 0.9 (grid view, retag exports), **0.95** (tool keys) | ✅ `./build_release.sh` → `dist/` |
 | Export TIFF 16-bit Adobe RGB / JPEG sRGB, resize, frame or roll | ✅ |
 | Curves (master + R/G/B, monotone spline, histogram behind, ⇧ fine drag, drag-off delete, paste option) | ✅ 2026-11-17 (v0.3) |
 | Before/after: hold `\` = plain inversion (geometry, spots, base, points kept; tone/paper/curves/mixer/presence/sharpening reset) | ✅ 2026-11-17 |
@@ -105,6 +105,7 @@ Follows the order you work in, which mostly follows the pipeline: geometry befor
 | Canon CR2/CR3 and Fujifilm RAF input (same linear CIRAWFilter decode; body support depends on macOS version) + app icon | ✅ 2026-11-20 (v0.8) |
 | Grid view (G/E, contact sheet in place of the preview) + sidebar thumbnails; positives of edited frames, disk cache | ✅ 2026-11-23 (v0.9) |
 | Retag Exported Photos: replace the scan camera's metadata of existing JPEG/TIFF exports with the analog data, lossless, verified | ✅ 2026-11-23 (v0.9, user-tested) |
+| Capture One-style single-key tools: C crop, L straighten, W film base, ⇧W white-balance picker, Q spots, ⌘F flip (key monitor, ignored while typing, press again to leave, from the grid opens the loupe) | ✅ 2026-11-23 (v0.95) |
 | Compressed TIFF (Predictor 2 + Deflate) | ⏳ todo |
 | Output sharpening for downsized exports (export setting, radius in output pixels) | ⏳ optional |
 | Auto-crop to film frame | ⏳ Phase 3 |

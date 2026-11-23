@@ -33,16 +33,16 @@ Already configured in the project: Swift 5 mode, default actor isolation `noniso
 ```bash
 ./build_release.sh          # → dist/NegConv-<version>-<build>.zip (Apple Silicon + Intel)
 ```
-Current version: **0.9** (build 9). On the other Mac: unzip → Applications → first launch: System Settings → Privacy & Security → **Open Anyway** (or `xattr -dr com.apple.quarantine /Applications/NegConv.app`). Bump `MARKETING_VERSION` for new versions.
+Current version: **0.95** (build 10). On the other Mac: unzip → Applications → first launch: System Settings → Privacy & Security → **Open Anyway** (or `xattr -dr com.apple.quarantine /Applications/NegConv.app`). Bump `MARKETING_VERSION` for new versions.
 
 ## Workflow (per roll)
 The inspector runs top → bottom in this order.
 1. **⌘O** open the roll folder. **G** shows the roll as a contact sheet (grid) in place of the preview, **E** (or double-click / Return on a tile) goes back to editing; arrows move between frames. Unedited frames show the camera's embedded negative, edited ones a small positive that follows your edits. Keep RAW Decode settings fixed for the whole roll (top of the inspector, collapsed). **⌘I** Roll Info: camera, lens, film stock, box ISO / shot-at EI, development, date, location, credits — this (not the scan camera) goes into the exports.
-2. Rotate (**⌘[ ⌘]**), flip (**⌥⌘F**), straighten (**⌘L**, draw along a horizon/vertical), crop (**⌘K**, Return to apply) — crop inside the image, excluding rebate and sprocket holes.
-3. **⌘B** sample the film base on one frame: drag a box on clear rebate (not on sprocket holes). Then **Use for Whole Roll** — every frame without its own sample uses it.
+2. Rotate (**⌘[ ⌘]**), flip (**⌘F**), straighten (**L**, draw along a horizon/vertical), crop (**C**, Return to apply) — crop inside the image, excluding rebate and sprocket holes.
+3. **W** sample the film base on one frame: drag a box on clear rebate (not on sprocket holes). Then **Use for Whole Roll** — every frame without its own sample uses it.
 4. Crop the other frames (paste crop with ⇧⌘V if the holder didn't move), then **Analyse Roll** in the Roll section (~2 s per frame). Exclude blank frames / test shots (**Exclude frame**, or right-click in the list).
    Points: **Roll colour** (default for new frames) = the roll's colour balance, fitted to each frame's range so no channel clips → neighbouring frames match, a sunset stays a sunset. **Frame** = each frame's own percentiles (old behaviour). **Roll** = identical points for the whole roll. Editing a density slider switches to manual.
-5. Exposure & white balance: **⌥⌘W** click something neutral, then Exposure.
+5. Exposure & white balance: **⇧W** click something neutral, then Exposure.
 6. Paper: turn on **Print on paper** for a print look — Grade (Soft/Normal/Hard) sets contrast around mid-grey, highlights roll off instead of clipping, Surface/Paper black sets how deep blacks go (matte = lifted). Brightness stays on Exposure.
 7. Levels: per channel, then RGB — trims on the print.
    Curves: RGB / R / G / B. Click to add a point (it lands on the curve), drag to move (hold ⇧ for fine), drag a point off the graph to remove it (red ring) or use −; end points move like levels black/white. In/Out shown 0–255. Histogram of the result behind the graph, other channels' curves shown faintly.
@@ -51,7 +51,7 @@ The inspector runs top → bottom in this order.
    Sharpen: luminance-only unsharp mask, applied last. **Amount** (0–300 %), **Radius** in full-resolution pixels (≈ 0.6–1 for D810, 0.8–1.2 for D750), **Threshold** (levels; raise it if grain gets gritty). Judge it at 1:1 (tap Z / hold ⌥) — the fitted preview only approximates it.
    Check your work: hold **\** for **before** (the plain inversion — crop, spots, base and points kept; exposure/WB, paper, levels, curves, mixer, presence, sharpening reset). Press **J** for the **clipping overlay**: red = will export as pure white, blue = pure black, magenta = both — tested in the export colour space (Adobe RGB for TIFF, sRGB for JPEG), so out-of-gamut colours show too.
    Match frames: once one frame looks right, pin it as **reference** (**⇧R**, Reference section). On the next frames show it **side by side** (**⌥⌘R**) or hold **R** to flash it in place, and use **Match WB to Reference** (**⇧⌥⌘W**) to copy its colour balance (neutral midtones; exposure untouched).
-10. Dust: **⌘J**, click specks; **drag to paint** along hairs/scratches; **⇧-click** draws a straight stroke from the last spot (hold ⌥ for the 100 % loupe, space+drag pans at 1:1).
+10. Dust: **Q**, click specks; **drag to paint** along hairs/scratches; **⇧-click** draws a straight stroke from the last spot (hold ⌥ for the 100 % loupe, space+drag pans at 1:1).
     Per frame (Shooting Data section, near the bottom): date & time, aperture, shutter (`1/125`, `2s`), lens, focal length, caption — empty fields use the roll info.
 11. **⇧⌘C** copy settings → next frame **⇧⌘V** (choose what to paste, or Paste to All Frames).
 12. **⌘E** export frame / **⇧⌘E** export roll → `NegConv Export/`. Format and size: **⌥⌘E**.
@@ -67,12 +67,13 @@ Scans converted elsewhere (Capture One, Lightroom, older NegConv) carry the *sca
 | Keys | Action |
 |---|---|
 | ⌘O | Open roll folder |
+| C L W ⇧W Q | Tools (single keys, as in Capture One; ignored while typing in a field; press again to leave the tool) |
 | G / E | Grid (contact sheet) / loupe — in the grid: arrows move, Return or double-click edits |
 | ⌘[ / ⌘] | Rotate left / right |
-| ⌥⌘F | Flip horizontal |
-| ⌘K, Return | Crop, apply crop |
-| ⌘L | Straighten (draw line) |
-| ⌘B | Sample film base |
+| ⌘F | Flip horizontal |
+| C, Return | Crop, apply crop |
+| L | Straighten (draw line) |
+| W | Sample film base |
 | ⌘\ | Show negative / positive |
 | hold \ | Before (plain inversion) |
 | J | Clipping overlay on/off (red highlights, blue shadows, magenta both) |
@@ -80,9 +81,9 @@ Scans converted elsewhere (Capture One, Lightroom, older NegConv) carry the *sca
 | hold R | Flash the reference in place of this frame |
 | ⌥⌘R | Reference side by side |
 | ⇧⌥⌘W | Match white balance to reference |
-| ⌥⌘W | White-balance picker |
+| ⇧W | White-balance picker |
 | ⌥⌘M | Colour-mixer picker |
-| ⌘J | Spot removal — click = spot, drag = brush stroke, ⇧-click = straight stroke, `[` `]` size, ⌫ delete, Return done |
+| Q | Spot removal — click = spot, drag = brush stroke, ⇧-click = straight stroke, `[` `]` size, ⌫ delete, Return done |
 | Space + drag | Pan the 1:1 view (any tool; in the spot tool plain drag paints) |
 | hold Z or ⌥ | Loupe at cursor (⌥ + scroll/pinch or +/− for 100/200/400 %) |
 | tap Z, ⌘1, double-click | 1:1 view (drag/scroll to pan, pinch or +/− to zoom, Esc to fit) |

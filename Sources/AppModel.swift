@@ -900,6 +900,7 @@ final class AppModel {
 
         // G / E switch grid and loupe; in the grid only its own keys apply.
         if isKey, handleGridKey(event) { return true }
+        if isKey, handleToolKey(event) { return true }
         if viewMode == .grid { return false }
 
         // Return / Enter applies the crop.
@@ -925,7 +926,7 @@ final class AppModel {
         guard magnifierTool, currentDecode != nil else { return false }
 
         // Hold \ = before (plain inversion); J toggles the clipping overlay. No modifiers
-        // (⌘\ is Show Negative, ⌘J the spot tool), and not while typing in a value field.
+        // (⌘\ is Show Negative, ⌘J used to be the spot tool), and not while typing in a value field.
         if isKey, event.modifierFlags.intersection([.command, .control, .option]).isEmpty,
            !(NSApp.keyWindow?.firstResponder is NSText) {
             switch event.charactersIgnoringModifiers?.lowercased() {

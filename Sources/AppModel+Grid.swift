@@ -102,3 +102,31 @@ extension AppModel {
         }.count
     }
 }
+
+extension AppModel {
+    /// Single-key tool shortcuts (Capture One style): C crop, L straighten, W film base,
+    /// ⇧W white-balance picker, Q spot removal. Pressing the key again leaves the tool; in the
+    /// grid it opens the selected frame in the loupe with that tool. Returns true if consumed.
+    func handleToolKey(_ event: NSEvent) -> Bool {
+        guard event.modifierFlags.intersection([.command, .control, .option]).isEmpty else { return false }
+        let shift = event.modifierFlags.contains(.shift)
+        let t: EditTool?
+        switch event.charactersIgnoringModifiers?.lowercased() {
+        case "c" where !shift: t = .crop
+        case "l" where !shift: t = .straighten
+        case "w": t = shift ? .whiteBalance : .sampleBase
+        case "q" where !shift: t = .spot
+        default: t = nil
+        }
+        guard let t else { return false }
+        if event.type == .keyDown, !event.isARepeat, selection != nil {
+            if viewMode == .grid {
+                viewMode = .loupe
+                tool = t
+            } else {
+                toggleTool(t)
+            }
+        }
+        return true
+    }
+}

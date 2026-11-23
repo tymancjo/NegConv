@@ -60,26 +60,23 @@ struct NegConvApp: App {
                 Button("Rotate Right") { model.rotateClockwise() }
                     .keyboardShortcut("]")
                 Button("Flip Horizontal") { model.toggleFlip() }
-                    .keyboardShortcut("f", modifiers: [.command, .option])
+                    .keyboardShortcut("f")
                 Divider()
-                Button(model.tool == .crop ? "Finish Crop" : "Crop") { model.toggleTool(.crop) }
-                    .keyboardShortcut("k")
-                Button("Straighten (Draw Line)") { model.toggleTool(.straighten) }
-                    .keyboardShortcut("l")
+                // Tool keys C, L, W, ⇧W, Q are single keys handled by the key monitor
+                // (ignored while typing in a field), so they are shown in the titles.
+                Button(model.tool == .crop ? "Finish Crop (C)" : "Crop (C)") { model.toggleTool(.crop) }
+                Button("Straighten — Draw Line (L)") { model.toggleTool(.straighten) }
                 Button("Reset Crop") { model.resetCrop() }
                 Button("Reset Geometry") { model.resetGeometry() }
                 Divider()
                 Button(model.actualSize ? "Zoom to Fit" : "Actual Size (100 %)") { model.toggleActualSize() }
                     .keyboardShortcut("1")
                 Divider()
-                Button("Sample Film Base") { model.toggleTool(.sampleBase) }
-                    .keyboardShortcut("b")
-                Button("Remove Spots") { model.toggleTool(.spot) }
-                    .keyboardShortcut("j")
+                Button("Sample Film Base (W)") { model.toggleTool(.sampleBase) }
+                Button("Remove Spots (Q)") { model.toggleTool(.spot) }
                 Button("Colour Mixer Picker") { model.toggleTool(.colorPick) }
                     .keyboardShortcut("m", modifiers: [.command, .option])
-                Button("White Balance Picker") { model.toggleTool(.whiteBalance) }
-                    .keyboardShortcut("w", modifiers: [.command, .option])
+                Button("White Balance Picker (⇧W)") { model.toggleTool(.whiteBalance) }
                 Button(model.showNegative ? "Show Positive" : "Show Negative") { model.showNegative.toggle() }
                     .keyboardShortcut("\\")
                 Button(model.showClipping ? "Hide Clipping (J)" : "Show Clipping (J)") { model.showClipping.toggle() }

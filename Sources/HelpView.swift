@@ -206,11 +206,11 @@ enum HelpContent {
             "**⌘I** Roll Info: camera, lens, film stock, box ISO / shot-at EI, development, date, location, credits. This — not the scan camera — goes into the exports."
         ]),
         HelpStep(title: "Geometry", body: [
-            "Rotate (**⌘[ ⌘]**), flip (**⌥⌘F**), straighten (**⌘L**, draw along a horizon or vertical), crop (**⌘K**, Return to apply).",
+            "Rotate (**⌘[ ⌘]**), flip (**⌘F**), straighten (**L**, draw along a horizon or vertical), crop (**C**, Return to apply).",
             "Crop inside the image, excluding the rebate and sprocket holes — the automatic points are measured inside the crop."
         ]),
         HelpStep(title: "Sample the film base", body: [
-            "**⌘B**, then drag a box on clear rebate (not on sprocket holes) on one frame.",
+            "**W**, then drag a box on clear rebate (not on sprocket holes) on one frame.",
             "**Use for Whole Roll** — every frame without its own sample then uses it."
         ]),
         HelpStep(title: "Crop the rest and analyse the roll", body: [
@@ -218,7 +218,7 @@ enum HelpContent {
             "**Points** — **Roll colour** (default): the roll's colour balance, fitted to each frame's range so no channel clips; neighbouring frames match and a sunset stays a sunset. **Frame**: each frame's own percentiles. **Roll**: identical points for the whole roll. Editing a density slider switches to manual."
         ]),
         HelpStep(title: "Exposure & white balance", body: [
-            "**⌥⌘W** and click something neutral, then set Exposure."
+            "**⇧W** and click something neutral, then set Exposure."
         ]),
         HelpStep(title: "Paper (optional)", body: [
             "Turn on **Print on paper** for a print look. Grade (Soft / Normal / Hard) sets contrast around mid-grey; highlights roll off instead of clipping; Surface / Paper black sets how deep the blacks go (matte = lifted). Brightness stays on Exposure."
@@ -237,7 +237,7 @@ enum HelpContent {
             "**Match frames**: pin a finished frame as **reference** (**⇧R**). On the next frames show it side by side (**⌥⌘R**) or hold **R** to flash it in place, and use **Match WB to Reference** (**⇧⌥⌘W**) to copy its colour balance (neutral midtones; exposure untouched)."
         ]),
         HelpStep(title: "Dust & shooting data", body: [
-            "**⌘J**, click specks; **drag to paint** along hairs and scratches; **⇧-click** draws a straight stroke from the last spot. Hold ⌥ for the 100 % loupe; space + drag pans at 1:1.",
+            "**Q**, click specks; **drag to paint** along hairs and scratches; **⇧-click** draws a straight stroke from the last spot. Hold ⌥ for the 100 % loupe; space + drag pans at 1:1.",
             "Shooting Data (near the bottom): date & time, aperture, shutter (`1/125`, `2s`), lens, focal length, caption per frame — empty fields use the roll info."
         ]),
         HelpStep(title: "Copy to other frames", body: [
@@ -252,10 +252,10 @@ enum HelpContent {
         ("⌘O", "Open roll folder"),
         ("G  E", "Grid (contact sheet) / loupe — in the grid: arrows move, Return or double-click edits"),
         ("⌘[  ⌘]", "Rotate left / right"),
-        ("⌥⌘F", "Flip horizontal"),
-        ("⌘K, Return", "Crop, apply crop"),
-        ("⌘L", "Straighten (draw line)"),
-        ("⌘B", "Sample film base"),
+        ("⌘F", "Flip horizontal"),
+        ("C, Return", "Crop, apply crop"),
+        ("L", "Straighten (draw line)"),
+        ("W", "Sample film base"),
         ("⌘\\", "Show negative / positive"),
         ("hold \\", "Before (plain inversion)"),
         ("J", "Clipping overlay on/off (red highlights, blue shadows, magenta both)"),
@@ -263,9 +263,9 @@ enum HelpContent {
         ("hold R", "Flash the reference in place of this frame"),
         ("⌥⌘R", "Reference side by side"),
         ("⇧⌥⌘W", "Match white balance to reference"),
-        ("⌥⌘W", "White-balance picker"),
+        ("⇧W", "White-balance picker"),
         ("⌥⌘M", "Colour-mixer picker"),
-        ("⌘J", "Spot removal — click = spot, drag = brush stroke, ⇧-click = straight stroke, `[` `]` size, ⌫ delete, Return done"),
+        ("Q", "Spot removal — click = spot, drag = brush stroke, ⇧-click = straight stroke, `[` `]` size, ⌫ delete, Return done"),
         ("Space + drag", "Pan the 1:1 view (any tool; in the spot tool plain drag paints)"),
         ("hold Z or ⌥", "Loupe at cursor (⌥ + scroll/pinch or +/− for 100 / 200 / 400 %)"),
         ("Z, ⌘1, dbl-click", "1:1 view (drag/scroll to pan, pinch or +/− to zoom, Esc to fit)"),

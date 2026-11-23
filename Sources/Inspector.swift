@@ -38,7 +38,7 @@ struct InspectorView: View {
                             Label("Draw Line", systemImage: "level")
                         }
                         .toggleStyle(.button)
-                        .help("Draw along a horizon or vertical edge (⌘L)")
+                        .help("Draw along a horizon or vertical edge (L)")
                         Button("0°") { model.setStraighten(0) }
                             .help("Reset straighten")
                     }
@@ -492,7 +492,7 @@ struct SpotSection: View {
                     Label("Remove Spots", systemImage: "bandage")
                 }
                 .toggleStyle(.button)
-                .help("⌘J — click specks on the image")
+                .help("Q — click specks on the image")
                 Spacer()
                 Text("\(model.recipe.spots.count) spot\(model.recipe.spots.count == 1 ? "" : "s")")
                     .foregroundStyle(.secondary)

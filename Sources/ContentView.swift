@@ -134,7 +134,7 @@ struct ContentView: View {
             }
             .overlay(alignment: .bottom) {
                 if model.viewMode == .loupe, model.tool == .none, model.orientedImage != nil, !model.recipe.inversion.isReady {
-                    Label("Sample the film base (⌘B) to invert", systemImage: "eyedropper")
+                    Label("Sample the film base (W) to invert", systemImage: "eyedropper")
                         .padding(.horizontal, 12).padding(.vertical, 6)
                         .background(.regularMaterial, in: Capsule())
                         .padding(14)
@@ -197,23 +197,23 @@ struct ContentView: View {
                 Button { model.toggleFlip() } label: {
                     Label("Flip", systemImage: "arrow.left.and.right.righttriangle.left.righttriangle.right")
                 }
-                .help("Flip horizontal (⌥⌘F)")
+                .help("Flip horizontal (⌘F)")
                 Toggle(isOn: toolBinding(.crop)) {
                     Label("Crop", systemImage: "crop")
                 }
-                .help("Crop (⌘K)")
+                .help("Crop (C)")
                 Toggle(isOn: toolBinding(.straighten)) {
                     Label("Straighten", systemImage: "level")
                 }
-                .help("Straighten: draw a line (⌘L)")
+                .help("Straighten: draw a line (L)")
                 Toggle(isOn: toolBinding(.spot)) {
                     Label("Remove Spots", systemImage: "bandage")
                 }
-                .help("Remove dust spots (⌘J)")
+                .help("Remove dust spots (Q)")
                 Toggle(isOn: toolBinding(.sampleBase)) {
                     Label("Sample Film Base", systemImage: "eyedropper")
                 }
-                .help("Sample film base (⌘B)")
+                .help("Sample film base (W)")
                 Toggle(isOn: Binding(get: { model.referenceSideBySide },
                                      set: { on in
                                          if on && model.referenceURL == nil { model.setReference() }
