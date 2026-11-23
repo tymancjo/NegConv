@@ -33,11 +33,11 @@ Already configured in the project: Swift 5 mode, default actor isolation `noniso
 ```bash
 ./build_release.sh          # → dist/NegConv-<version>-<build>.zip (Apple Silicon + Intel)
 ```
-Current version: **0.8** (build 8). On the other Mac: unzip → Applications → first launch: System Settings → Privacy & Security → **Open Anyway** (or `xattr -dr com.apple.quarantine /Applications/NegConv.app`). Bump `MARKETING_VERSION` for new versions.
+Current version: **0.9** (build 9). On the other Mac: unzip → Applications → first launch: System Settings → Privacy & Security → **Open Anyway** (or `xattr -dr com.apple.quarantine /Applications/NegConv.app`). Bump `MARKETING_VERSION` for new versions.
 
 ## Workflow (per roll)
 The inspector runs top → bottom in this order.
-1. **⌘O** open the roll folder. Keep RAW Decode settings fixed for the whole roll (top of the inspector, collapsed). **⌘I** Roll Info: camera, lens, film stock, box ISO / shot-at EI, development, date, location, credits — this (not the scan camera) goes into the exports.
+1. **⌘O** open the roll folder. **G** shows the roll as a contact sheet (grid) in place of the preview, **E** (or double-click / Return on a tile) goes back to editing; arrows move between frames. Unedited frames show the camera's embedded negative, edited ones a small positive that follows your edits. Keep RAW Decode settings fixed for the whole roll (top of the inspector, collapsed). **⌘I** Roll Info: camera, lens, film stock, box ISO / shot-at EI, development, date, location, credits — this (not the scan camera) goes into the exports.
 2. Rotate (**⌘[ ⌘]**), flip (**⌥⌘F**), straighten (**⌘L**, draw along a horizon/vertical), crop (**⌘K**, Return to apply) — crop inside the image, excluding rebate and sprocket holes.
 3. **⌘B** sample the film base on one frame: drag a box on clear rebate (not on sprocket holes). Then **Use for Whole Roll** — every frame without its own sample uses it.
 4. Crop the other frames (paste crop with ⇧⌘V if the holder didn't move), then **Analyse Roll** in the Roll section (~2 s per frame). Exclude blank frames / test shots (**Exclude frame**, or right-click in the list).
@@ -56,10 +56,18 @@ The inspector runs top → bottom in this order.
 11. **⇧⌘C** copy settings → next frame **⇧⌘V** (choose what to paste, or Paste to All Frames).
 12. **⌘E** export frame / **⇧⌘E** export roll → `NegConv Export/`. Format and size: **⌥⌘E**.
 
+## Retag exported photos
+Scans converted elsewhere (Capture One, Lightroom, older NegConv) carry the *scanning* camera's EXIF. **File → Retag Exported Photos…** rewrites the metadata of a folder of JPEG / TIFF exports so they describe the analog shot instead:
+- Rolls are taken from file names `<date>_<camera code>_<film>_<roll#>_<frame#>` (e.g. `2026-10-22_FEa_Portra160_1131_07.jpg`; date and camera code optional). Other files go to "Other files", unticked when the folder has roll frames.
+- Each roll is pre-filled: camera code → make/model (remembered once you set it), film code → stock and box ISO (`Portra160` → Kodak Portra 160, ISO 160), roll date from the name, camera code as keyword. Edit the rest (lens, development, location, credits) in the roll panel; per-frame f-stop, shutter, lens, date and caption in the table.
+- **All** existing metadata is removed — scan camera, lens, serial, exposure, the XMP and IPTC copies, GPS, captions/copyright left by converter presets, the embedded preview — and replaced by the same analog fields as a NegConv export. The image data is copied unchanged (no re-compression); each file is read back and gets ✓ only if no scanner model/serial/lens text is left and (JPEG) the compressed image is byte-identical.
+- Write copies to `Retagged/` (default) or replace the originals (asks first). The edits are kept in `NegConv Retag.json` in the folder.
+
 ## Keyboard reference
 | Keys | Action |
 |---|---|
 | ⌘O | Open roll folder |
+| G / E | Grid (contact sheet) / loupe — in the grid: arrows move, Return or double-click edits |
 | ⌘[ / ⌘] | Rotate left / right |
 | ⌥⌘F | Flip horizontal |
 | ⌘K, Return | Crop, apply crop |
@@ -90,7 +98,9 @@ The inspector runs top → bottom in this order.
 ## Files
 - `<name>.NEF.negconv.json` (or `.CR3`, `.RAF`, …) — per-frame recipe (incl. per-frame shooting data) + roll decode settings (autosaved).
 - `NegConv Roll.json` — roll decode settings (authoritative), roll base (frame, area, RGB), excluded frames, reference frame, roll info (shooting data), roll analysis (pooled points + per-frame fingerprints for the "out of date" check).
-- `NegConv Export/<name>.tif|jpg` — exports. TIFF: 16-bit RGB, Adobe RGB (1998), uncompressed. JPEG: 8-bit sRGB. Both carry the analog shooting data: Make/Model/Lens/ISO (EI)/f/shutter/date taken, description + IPTC caption (caption — film — development — notes), IPTC keywords (film stock + yours), location, artist, copyright; the scan only as Software, DateTimeDigitized and "Scan of <NEF>" in the user comment.
+- `NegConv Retag.json` (in a folder of exports) — roll info and per-frame overrides of the Retag window.
+- Thumbnails of edited frames are cached in `~/Library/Containers/<app>/Data/Library/Caches/…/Thumbnails/` (safe to delete).
+- `NegConv Export/<name>.tif|jpg` — exports. TIFF: 16-bit RGB, Adobe RGB (1998), uncompressed. JPEG: 8-bit sRGB. Both carry the analog shooting data: Make/Model/Lens/ISO (EI)/f/shutter/date taken, description + IPTC caption (caption — film — development — notes), IPTC keywords (film stock + yours), location, artist, copyright, local time-zone offsets; the scan only as Software, DateTimeDigitized and "Scan of <NEF>" in the user comment.
 
 ## Code map
 | File | Role |
@@ -106,10 +116,14 @@ The inspector runs top → bottom in this order.
 | `AppModel.swift` | App state, tools, loupe/1:1, space-pan, brush painting, autosave, roll base & roll analysis, before/after & clipping, reference frame (render, flash, Match WB), export orchestration |
 | `Exporter.swift`, `ExportSettings.swift` | Full-res render (RGBAf) and TIFF/JPEG writing; resolves roll points at export |
 | `ShootingData.swift` | `RollMetadata`, `FrameMetadata` (tolerant decoding, shutter parsing), `ExportMetadata` (EXIF/TIFF/IPTC dictionary for exports) |
-| `ShootingDataViews.swift` | Roll Info sheet, Shooting Data inspector section |
+| `ShootingDataViews.swift` | Roll Info sheet (`RollMetadataSections`, shared with Retag), Shooting Data inspector section |
 | `Sidecar.swift` | JSON sidecar load/save |
 | `PreviewView.swift` | MTKView renderer, loupe & 1:1 magnification |
 | `ContentView.swift` (incl. `ReferencePane`), `Inspector.swift` (incl. `ReferenceSection`), `*Overlay.swift`, `Histogram.swift` | UI |
 | `PrecisionSlider.swift` | Inspector slider: relative ⇧-fine drag, scrubbable/typeable value, double-click reset |
+| `Thumbnails.swift` | `ThumbnailStore` (per window, background queue, negatives first), renderer (embedded RAW preview / small positive through the pipeline), disk cache |
+| `AppModel+Grid.swift`, `RollGridView.swift` | Grid view state, thumbnail scheduling (live thumbnail of the open frame from its preview), G/E/arrow keys; grid tiles, shared badges and context menu |
+| `Retag.swift`, `RetagView.swift` | Retag window: file-name parsing, camera codes, film names, rolls, writing, `NegConv Retag.json` |
+| `MetadataRewriter.swift` | Lossless metadata replacement (`CGImageDestinationCopyImageSource`) + read-back verification |
 | `HelpView.swift` | Help window (⌘?, user-facing copy of this README — keep in sync), About panel credits |
 | `KeyMonitor.swift` | Loupe keys, zoom/pan gestures, tool keys, `\` before, J clipping, R / ⇧R reference |

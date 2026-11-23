@@ -191,12 +191,18 @@ enum HelpContent {
         "## Checking your work",
         "- Hold `\\` for **before** — the plain inversion (crop, spots, base and points kept; everything after is reset).",
         "- Press **J** for the **clipping overlay**: red = will export as pure white, blue = pure black, magenta = both. Tested in the export colour space, so out-of-gamut colours show too.",
-        "- Tap **Z** (or ⌘1, or double-click) for 1:1; hold **Z** or **⌥** for a loupe at the cursor."
+        "- Tap **Z** (or ⌘1, or double-click) for 1:1; hold **Z** or **⌥** for a loupe at the cursor.",
+        "## Retag exported photos",
+        "**File → Retag Exported Photos…** rewrites the metadata of JPEG / TIFF scans converted elsewhere (Capture One, Lightroom, older NegConv) so they describe the analog shot instead of the scanning camera.",
+        "- Rolls come from file names `<date>_<camera code>_<film>_<roll#>_<frame#>` (date and camera code optional); camera code → make / model (remembered), film code → stock and box ISO, date from the name.",
+        "- All old metadata (scan camera, lens, serial, XMP / IPTC copies, GPS, converter captions, embedded preview) is replaced by the same analog fields as an export. Image data is copied unchanged; each file is read back and gets ✓ only if nothing of the scanner is left.",
+        "- Copies go to `Retagged/` unless you choose Replace originals. Edits are kept in `NegConv Retag.json`."
     ]
 
     static let workflow: [HelpStep] = [
         HelpStep(title: "Open the roll", body: [
             "**⌘O** opens the roll folder. Keep the RAW Decode settings (top of the inspector, collapsed) fixed for the whole roll.",
+            "**G** shows the roll as a contact sheet in place of the preview; **E**, double-click or Return goes back to editing, arrows move between frames. Unedited frames show the camera's embedded negative, edited ones a small positive that follows your edits.",
             "**⌘I** Roll Info: camera, lens, film stock, box ISO / shot-at EI, development, date, location, credits. This — not the scan camera — goes into the exports."
         ]),
         HelpStep(title: "Geometry", body: [
@@ -244,6 +250,7 @@ enum HelpContent {
 
     static let shortcuts: [(keys: String, action: String)] = [
         ("⌘O", "Open roll folder"),
+        ("G  E", "Grid (contact sheet) / loupe — in the grid: arrows move, Return or double-click edits"),
         ("⌘[  ⌘]", "Rotate left / right"),
         ("⌥⌘F", "Flip horizontal"),
         ("⌘K, Return", "Crop, apply crop"),
@@ -274,10 +281,12 @@ enum HelpContent {
         "`<name>.NEF.negconv.json` (or `.CR3`, `.RAF`, …) — the frame's recipe (incl. per-frame shooting data) plus the roll decode settings. Autosaved.",
         "## In the roll folder",
         "`NegConv Roll.json` — roll decode settings (authoritative), roll film base (frame, area, RGB), excluded frames, reference frame, roll info (shooting data) and the roll analysis (pooled density points + per-frame fingerprints for the “out of date” check).",
+        "## In a folder of retagged exports",
+        "`NegConv Retag.json` — roll info and per-frame overrides of the Retag window.",
         "## Exports",
         "`NegConv Export/<name>.tif | .jpg`",
         "- **TIFF**: 16-bit RGB, Adobe RGB (1998), uncompressed.",
         "- **JPEG**: 8-bit sRGB.",
-        "Both carry the analog shooting data: Make / Model / Lens / ISO (EI) / f / shutter / date taken, description + IPTC caption (caption — film — development — notes), IPTC keywords (film stock + yours), location, artist, copyright. The scan itself appears only as Software, DateTimeDigitized and `Scan of <NEF>` in the user comment."
+        "Both carry the analog shooting data: Make / Model / Lens / ISO (EI) / f / shutter / date taken, description + IPTC caption (caption — film — development — notes), IPTC keywords (film stock + yours), location, artist, copyright, local time-zone offsets. The scan itself appears only as Software, DateTimeDigitized and `Scan of <NEF>` in the user comment."
     ]
 }

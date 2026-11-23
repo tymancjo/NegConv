@@ -11,44 +11,16 @@ struct ContentView: View {
 
         NavigationSplitView {
             List(model.files, id: \.self, selection: $model.selection) { url in
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
+                    FrameThumbnail(url: url)
+                        .frame(width: 44, height: 32)
                     Text(url.deletingPathExtension().lastPathComponent)
                         .lineLimit(1)
                         .truncationMode(.middle)
                     Spacer(minLength: 0)
-                    if model.isExcluded(url) {
-                        Image(systemName: "minus.circle")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .help("Excluded from roll analysis")
-                    }
-                    if model.referenceName == url.lastPathComponent {
-                        Image(systemName: "pin.fill")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .help("Reference frame")
-                    }
-                    if model.rollBase?.frame == url.lastPathComponent {
-                        Image(systemName: "eyedropper")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .help("Roll base sampled here")
-                    }
-                    if let r = model.recipes[url], r.inversion.baseRect != nil || r.inversion.base != nil {
-                        Circle()
-                            .fill(Color.accentColor)
-                            .frame(width: 6, height: 6)
-                            .help("Edited")
-                    }
+                    FrameBadges(url: url)
                 }
-                    .contextMenu {
-                        Button("Paste Settings Here") { model.pasteSettings(into: url) }
-                            .disabled(model.clipboard == nil)
-                        Button("Set as Reference") { model.selection = url; model.setReference() }
-                        Button(model.isExcluded(url) ? "Include in Roll Analysis" : "Exclude from Roll Analysis") {
-                            model.toggleExcluded(url)
-                        }
-                    }
+                .contextMenu { FrameContextMenu(url: url) }
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 230)
             .overlay {
@@ -63,6 +35,10 @@ struct ContentView: View {
                 }
             }
         } detail: {
+            Group {
+            if model.viewMode == .grid {
+                RollGridView()
+            } else {
             HStack(spacing: 2) {
             if model.referenceSideBySide {
                 ReferencePane()
@@ -106,6 +82,8 @@ struct ContentView: View {
                         EmptyView()
                     }
                 }
+            }
+            }
             }
             }
             }
@@ -155,7 +133,7 @@ struct ContentView: View {
                 }
             }
             .overlay(alignment: .bottom) {
-                if model.tool == .none, model.orientedImage != nil, !model.recipe.inversion.isReady {
+                if model.viewMode == .loupe, model.tool == .none, model.orientedImage != nil, !model.recipe.inversion.isReady {
                     Label("Sample the film base (⌘B) to invert", systemImage: "eyedropper")
                         .padding(.horizontal, 12).padding(.vertical, 6)
                         .background(.regularMaterial, in: Capsule())
@@ -198,6 +176,15 @@ struct ContentView: View {
         .navigationTitle(model.folderURL?.lastPathComponent ?? "NegConv")
         .navigationSubtitle(model.selection?.lastPathComponent ?? "")
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                Picker("View", selection: $model.viewMode) {
+                    Label("Loupe", systemImage: "rectangle").tag(AppModel.ViewMode.loupe)
+                    Label("Grid", systemImage: "square.grid.2x2").tag(AppModel.ViewMode.grid)
+                }
+                .pickerStyle(.segmented)
+                .help("Loupe (E) · Grid (G)")
+                .disabled(model.files.isEmpty)
+            }
             ToolbarItemGroup(placement: .principal) {
                 Button { model.rotateCounterClockwise() } label: {
                     Label("Rotate Left", systemImage: "rotate.left")

@@ -13,36 +13,7 @@ struct RollInfoSheet: View {
                 .padding(.horizontal, 20).padding(.top, 2)
 
             Form {
-                Section("Camera") {
-                    TextField("Make", text: $model.rollMeta.cameraMake, prompt: Text("Nikon"))
-                    TextField("Model", text: $model.rollMeta.cameraModel, prompt: Text("FM2"))
-                    TextField("Lens", text: $model.rollMeta.lens, prompt: Text("Nikkor 50mm f/1.4 AI-S"))
-                    TextField("Focal length (mm)", value: $model.rollMeta.focalLength, format: .number,
-                              prompt: Text("50"))
-                }
-                Section("Film") {
-                    TextField("Film stock", text: $model.rollMeta.filmStock, prompt: Text("Kodak Portra 400"))
-                    TextField("Format", text: $model.rollMeta.filmFormat, prompt: Text("35mm"))
-                    TextField("Box ISO", value: $model.rollMeta.boxISO, format: .number.grouping(.never),
-                              prompt: Text("400"))
-                    TextField("Shot at EI", value: $model.rollMeta.exposureIndex, format: .number.grouping(.never),
-                              prompt: Text("same as box"))
-                    TextField("Development", text: $model.rollMeta.development,
-                              prompt: Text("C-41, home, Tetenal kit"))
-                }
-                Section("When & where") {
-                    OptionalDatePicker(title: "Date shot", date: $model.rollMeta.date, components: .date)
-                    TextField("Location", text: $model.rollMeta.location, prompt: Text("Kraków"))
-                }
-                Section("Credits") {
-                    TextField("Photographer", text: $model.rollMeta.photographer)
-                    TextField("Copyright", text: $model.rollMeta.copyright, prompt: Text("© 2026 …"))
-                }
-                Section("Notes") {
-                    TextField("Keywords", text: $model.rollMeta.keywords, prompt: Text("comma, separated"))
-                    TextField("Roll notes", text: $model.rollMeta.notes, axis: .vertical)
-                        .lineLimit(2...4)
-                }
+                RollMetadataSections(meta: $model.rollMeta)
             }
             .formStyle(.grouped)
 
@@ -60,6 +31,45 @@ struct RollInfoSheet: View {
 
     private var summary: String {
         [model.rollMeta.cameraSummary, model.rollMeta.filmSummary].filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+}
+
+/// The roll-level fields (camera, film, when & where, credits, notes) — used by the Roll Info
+/// sheet and by the Retag window.
+struct RollMetadataSections: View {
+    @Binding var meta: RollMetadata
+
+    var body: some View {
+        Section("Camera") {
+            TextField("Make", text: $meta.cameraMake, prompt: Text("Nikon"))
+            TextField("Model", text: $meta.cameraModel, prompt: Text("FM2"))
+            TextField("Lens", text: $meta.lens, prompt: Text("Nikkor 50mm f/1.4 AI-S"))
+            TextField("Focal length (mm)", value: $meta.focalLength, format: .number,
+                      prompt: Text("50"))
+        }
+        Section("Film") {
+            TextField("Film stock", text: $meta.filmStock, prompt: Text("Kodak Portra 400"))
+            TextField("Format", text: $meta.filmFormat, prompt: Text("35mm"))
+            TextField("Box ISO", value: $meta.boxISO, format: .number.grouping(.never),
+                      prompt: Text("400"))
+            TextField("Shot at EI", value: $meta.exposureIndex, format: .number.grouping(.never),
+                      prompt: Text("same as box"))
+            TextField("Development", text: $meta.development,
+                      prompt: Text("C-41, home, Tetenal kit"))
+        }
+        Section("When & where") {
+            OptionalDatePicker(title: "Date shot", date: $meta.date, components: .date)
+            TextField("Location", text: $meta.location, prompt: Text("Kraków"))
+        }
+        Section("Credits") {
+            TextField("Photographer", text: $meta.photographer)
+            TextField("Copyright", text: $meta.copyright, prompt: Text("© 2026 …"))
+        }
+        Section("Notes") {
+            TextField("Keywords", text: $meta.keywords, prompt: Text("comma, separated"))
+            TextField("Roll notes", text: $meta.notes, axis: .vertical)
+                .lineLimit(2...4)
+        }
     }
 }
 

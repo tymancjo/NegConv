@@ -155,9 +155,16 @@ enum ExportMetadata {
         if let shot = f.date ?? r.date.map({ Self.noon($0).addingTimeInterval(TimeInterval(i.frameIndex)) }) {
             let s = exifDate(shot)
             exif[kCGImagePropertyExifDateTimeOriginal] = s
+            exif[kCGImagePropertyExifOffsetTimeOriginal] = offset(shot, colon: true)
             iptc[kCGImagePropertyIPTCDateCreated] = iptcDate(shot)
+            iptc[kCGImagePropertyIPTCTimeCreated] = iptcTime(shot)
         }
-        if let scan = i.scanDate { exif[kCGImagePropertyExifDateTimeDigitized] = exifDate(scan) }
+        if let scan = i.scanDate {
+            exif[kCGImagePropertyExifDateTimeDigitized] = exifDate(scan)
+            exif[kCGImagePropertyExifOffsetTimeDigitized] = offset(scan, colon: true)
+            iptc[kCGImagePropertyIPTCDigitalCreationDate] = iptcDate(scan)
+            iptc[kCGImagePropertyIPTCDigitalCreationTime] = iptcTime(scan)
+        }
 
         // Description: caption — film — development — roll notes.
         let film = r.filmSummary
@@ -230,6 +237,22 @@ enum ExportMetadata {
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "yyyyMMdd"
         return f.string(from: d)
+    }
+
+    /// "120001+0100": IPTC time with the local UTC offset (without it readers assume UTC).
+    private static func iptcTime(_ d: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "HHmmss"
+        return f.string(from: d) + offset(d, colon: false)
+    }
+
+    /// Local UTC offset at `d`: "+01:00" (EXIF OffsetTime*) or "+0100" (IPTC).
+    private static func offset(_ d: Date, colon: Bool) -> String {
+        let secs = TimeZone.current.secondsFromGMT(for: d)
+        let sign = secs < 0 ? "-" : "+"
+        let h = abs(secs) / 3600, m = abs(secs) % 3600 / 60
+        return String(format: colon ? "%@%02d:%02d" : "%@%02d%02d", sign, h, m)
     }
 
     private static func noon(_ d: Date) -> Date {

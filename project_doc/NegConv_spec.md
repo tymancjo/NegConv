@@ -1,6 +1,6 @@
 # NegConv — macOS film negative converter (spec)
 
-_Last updated: 2026-11-17 · version 0.6 (build 6) · status: MVP 1 complete + Phase 2 (except B&W) · colour work: C1–C5 all done (see `NegConv_color_plan.md`) · 2026-11-17: colour mixer moved before Presence; inspector in workflow order; roll base + roll analysis; curves; v0.6: sharpening._
+_Last updated: 2026-11-23 · version 0.9 (build 9) · status: MVP 1 complete + Phase 2 (except B&W) · colour work: C1–C5 all done (see `NegConv_color_plan.md`) · 2026-11-17: colour mixer moved before Presence; inspector in workflow order; roll base + roll analysis; curves; v0.6: sharpening · v0.8: Canon/Fuji RAW · v0.9: grid view + thumbnails, Retag Exported Photos._
 
 ## Goal
 Native macOS app to convert camera-scanned film negatives (Nikon D810 / D750, 14-bit lossless NEF) into high-quality positives, with non-destructive editing.
@@ -47,8 +47,21 @@ Working colour space: extended linear sRGB, set explicitly once — never rely o
 
 ## Shooting data (exports)
 - Roll: `RollMetadata` in `NegConv Roll.json` (`metadata`), edited in the Roll Info sheet (⌘I), saved debounced. Frame: `EditRecipe.meta` (`FrameMetadata`) in the sidecar; excluded from render/histogram/reference keys (`EditRecipe.rendering`). Paste option "Lens, aperture, shutter, focal length" (off by default).
-- Mapping (`ExportMetadata.properties`): TIFF Make/Model/Artist/Copyright/Software/ImageDescription; EXIF LensModel, FocalLength, FNumber, ExposureTime, ISOSpeedRatings (EI, else box), DateTimeOriginal (frame date+time, else roll date 12:00 + frame index s → roll order), DateTimeDigitized (scan NEF's capture time), UserComment (film · development · "Scan of <NEF> with NegConv x.y", ASCII-folded incl. Ł/ł); IPTC Caption-Abstract, Keywords (film stock + user keywords), ContentLocationName, By-line, CopyrightNotice, DateCreated. Verified by round-trip read-back for JPEG and TIFF.
+- Mapping (`ExportMetadata.properties`): TIFF Make/Model/Artist/Copyright/Software/ImageDescription; EXIF LensModel, FocalLength, FNumber, ExposureTime, ISOSpeedRatings (EI, else box), DateTimeOriginal (frame date+time, else roll date 12:00 + frame index s → roll order), DateTimeDigitized (scan NEF's capture time), UserComment (film · development · "Scan of <NEF> with NegConv x.y", ASCII-folded incl. Ł/ł); IPTC Caption-Abstract, Keywords (film stock + user keywords), ContentLocationName, By-line, CopyrightNotice, DateCreated + TimeCreated; local UTC offsets (EXIF OffsetTimeOriginal/Digitized, IPTC times "HHmmss±hhmm"), IPTC DigitalCreationDate/Time = scan. Verified by round-trip read-back for JPEG and TIFF.
 - Scan EXIF (D810 etc.) is never copied.
+
+## Grid view & thumbnails (v0.9)
+- **G** = grid (contact sheet) in place of the preview, **E** = loupe (bare keys via the key monitor, not while typing); also toolbar segmented control and View menu. In the grid: ←→ ±1, ↑↓ ± one row (columns computed like the adaptive grid), Return / double-click → loupe. Tile size slider (`gridTileSize`). Sidebar rows get 44 × 32 thumbnails.
+- `ThumbnailStore` per window: idempotent requests keyed by source, one background job at a time, fast jobs first. Sources: **embedded** (RAW's embedded preview via ImageIO, fallback reduced decode if < 256 px), **positive** (frames that would export: `smallLinearImage` 800 px → `measuredInversion` → `Pipeline.positive`, no sharpening → Lanczos to 640 px → sRGB 8-bit), **file** (JPEG/TIFF). Edited frames show the negative first.
+- Positive key = fingerprint of `EditRecipe.rendering` + roll decode + roll base (if no own base) + roll analysis (if roll point source). Disk cache `Caches/<bundle>/Thumbnails/<path hash>-<key>.jpg`, older keys of the same file removed.
+- Open frame: thumbnail from its 2560 px preview decode (no extra decode), 350 ms after the last edit. Roll decode / base / analysis changes refresh all frames.
+
+## Retag exported photos (v0.9)
+- Window **File → Retag Exported Photos…** for JPEG/TIFF converted elsewhere (Capture One etc.). Rolls from file names `<yyyy-MM-dd>_<camera>_<film>_<roll#>_<frame#>` (date and camera optional; roll and frame numeric), other files → "Other files" (unticked if the folder has roll frames). NegConv exports (Software contains "NegConv") unticked.
+- Prefill: camera code → make/model (`CameraAliases` in UserDefaults, seeded FEa/FEb → Nikon FE, learnt when edited), film code → stock + box ISO (`FilmNames`, else letters/digits split), date from the name, code as keyword, last photographer/copyright. Frame order: frame#, then scan time, then name → frame index for the 12:00 + index s rule.
+- Writing (`MetadataRewriter`): `CGImageDestinationCopyImageSource` with a new `CGImageMetadata` (`kCGImageDestinationMergeMetadata: false`, GPS excluded, no thumbnail): whitelist from the source (orientation, resolution, colour space, pixel size) + `ExportMetadata.properties` (Software = "<old software>; NegConv x.y"). ISO also as scalar + `exifEX:PhotographicSensitivity` (an array only reached XMP). Copies to `Retagged/` or in place (temp file + atomic replace, confirmation). Read-back: no scanner model/serial/lens string in properties or XMP tags (unless part of the new data), JPEG SOS…EOI byte-identical → ✓, else ⚠.
+- `NegConv Retag.json` in the folder: roll metadata + per-frame include/overrides, saved on Retag.
+- User test 2026-11-23 (74 Capture One JPEGs, in place): scanner data (X-T30, serial, 21 mm, "645 Yashica" preset caption) gone everywhere; open in 0.9: EXIF ISO, old thumbnail, IPTC time zone (fixed, re-test).
 
 ## Inspector order (workflow order, top → bottom)
 Histogram · RAW Decode (per roll, collapsed, summary in the header) · Geometry · Inversion (base, range, point source, density points) · Roll (analyse, exclude, roll points) · Reference · Exposure & White Balance · Paper · Levels · Curves · Colour Mixer · Presence · Sharpen · Spot Removal · Shooting Data · Scan Info.
@@ -80,7 +93,7 @@ Follows the order you work in, which mostly follows the pipeline: geometry befor
 | Space + drag pan in 1:1 | ✅ |
 | Copy / paste settings (selective, incl. point source), paste to whole roll | ✅ |
 | JSON sidecars (autosave, tolerant loading) + roll file | ✅ |
-| Release builds: 0.1, 0.2, 0.3 (roll analysis, curves, workflow-order inspector), 0.4 (before/after, clipping overlay, reference frame), 0.5 (shooting data in exports), **0.6** (sharpening) | ✅ `./build_release.sh` → `dist/` |
+| Release builds: 0.1, 0.2, 0.3 (roll analysis, curves, workflow-order inspector), 0.4 (before/after, clipping overlay, reference frame), 0.5 (shooting data in exports), 0.6 (sharpening), 0.8 (Canon/Fuji RAW), **0.9** (grid view, retag exports) | ✅ `./build_release.sh` → `dist/` |
 | Export TIFF 16-bit Adobe RGB / JPEG sRGB, resize, frame or roll | ✅ |
 | Curves (master + R/G/B, monotone spline, histogram behind, ⇧ fine drag, drag-off delete, paste option) | ✅ 2026-11-17 (v0.3) |
 | Before/after: hold `\` = plain inversion (geometry, spots, base, points kept; tone/paper/curves/mixer/presence/sharpening reset) | ✅ 2026-11-17 |
@@ -90,6 +103,8 @@ Follows the order you work in, which mostly follows the pipeline: geometry befor
 | B&W conversion (mixer before desaturation ✅; single-channel inversion) | ⏳ Phase 2 |
 | Shooting data in exports: roll info (⌘I: camera, lens, film, box ISO / EI, development, date, location, credits, keywords, notes) + per-frame overrides (date/time, f, shutter, lens, focal length, caption) → EXIF/TIFF/IPTC; scan only as Software, DateTimeDigitized, "Scan of <NEF>" | ✅ 2026-11-17 (v0.5) |
 | Canon CR2/CR3 and Fujifilm RAF input (same linear CIRAWFilter decode; body support depends on macOS version) + app icon | ✅ 2026-11-20 (v0.8) |
+| Grid view (G/E, contact sheet in place of the preview) + sidebar thumbnails; positives of edited frames, disk cache | ✅ 2026-11-23 (v0.9) |
+| Retag Exported Photos: replace the scan camera's metadata of existing JPEG/TIFF exports with the analog data, lossless, verified | ✅ 2026-11-23 (v0.9, user-tested) |
 | Compressed TIFF (Predictor 2 + Deflate) | ⏳ todo |
 | Output sharpening for downsized exports (export setting, radius in output pixels) | ⏳ optional |
 | Auto-crop to film frame | ⏳ Phase 3 |
@@ -106,7 +121,7 @@ Follows the order you work in, which mostly follows the pipeline: geometry befor
 ## Phases
 1. **MVP** ✅ — open NEF, preview, crop, sample film base, density inversion, exposure + per-channel levels, export 16-bit TIFF, JSON recipes.
 2. **Usable** — ✅ WB eyedropper, histogram, JSON recipes, copy/paste across a roll, colour mixer, spots, straighten, loupe, saturation/vibrance, paper, roll analysis, curves ✅ (v0.3), sharpening ✅ (v0.6); B&W single-channel inversion open.
-3. **Nice** — ✅ batch export, auto-levels, JPEG, before/after, clipping overlay, reference frame · ⏳ auto-crop, presets.
+3. **Nice** — ✅ batch export, auto-levels, JPEG, before/after, clipping overlay, reference frame, grid view, retag exports · ⏳ auto-crop, presets.
 
 ## Known issues
 - Sharpening in the fitted preview is only an approximation (radius scaled to the 2560 px preview, often sub-pixel); judge it at 1:1. Downsized exports lose much of the 1:1 sharpening in the Lanczos resize.
@@ -116,6 +131,7 @@ Follows the order you work in, which mostly follows the pipeline: geometry befor
 - High Saturation can push colours outside sRGB/Adobe RGB (negative channel values); they clip at export. With Paper on, highlights roll off below 1.0, but the mixer/Presence run after it and can still push colours out of gamut.
 - Sidecars saved before 2026-11-17 that use **both** the colour mixer and Presence render slightly differently now (mixer moved before Presence).
 - **Roll** point source (not Roll colour) is not fitted per frame: on strongly coloured or unusually dense/thin frames it can clip. Use Roll colour or Exposure.
+- Retag: removing the old EXIF thumbnail relies on `kCGImageDestinationEmbedThumbnail: false` being honoured by `CopyImageSource` (to be confirmed).
 - Roll analysis histograms are kept in memory only: after reopening a roll, the first re-analyse decodes all frames again.
 
 ## References

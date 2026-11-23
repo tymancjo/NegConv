@@ -34,6 +34,16 @@ struct NegConvApp: App {
                     .keyboardShortcut("e", modifiers: [.command, .option])
                 Button("Show Exports in Finder") { model.revealExports() }
                     .disabled(model.lastExportFolder == nil)
+                Divider()
+                RetagMenuButton()
+            }
+            CommandGroup(before: .sidebar) {
+                // Bare G / E are handled by the key monitor (not while typing in a field).
+                Button("Grid (G)") { model.viewMode = .grid }
+                    .disabled(model.files.isEmpty || model.viewMode == .grid)
+                Button("Loupe (E)") { model.viewMode = .loupe }
+                    .disabled(model.viewMode == .loupe)
+                Divider()
             }
             CommandGroup(after: .pasteboard) {
                 Divider()
@@ -92,6 +102,11 @@ struct NegConvApp: App {
                     .disabled(model.tool == .none)
             }
         }
+
+        Window(RetagWindow.title, id: RetagWindow.id) {
+            RetagView()
+        }
+        .defaultSize(width: 1320, height: 780)
 
         Window(HelpWindow.title, id: HelpWindow.id) {
             HelpView()

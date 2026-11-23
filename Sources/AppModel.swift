@@ -16,6 +16,20 @@ final class AppModel {
     /// Long edge of the preview decode. 2560 px ≈ scale 0.35 on a D810/D750 frame.
     static let previewLongEdge: CGFloat = 2560
 
+    // MARK: - Grid view & thumbnails
+
+    enum ViewMode: Hashable { case loupe, grid }
+    /// Lightroom-style: G = grid (contact sheet) in place of the preview, E = back to the loupe.
+    var viewMode: ViewMode = .loupe {
+        didSet { if viewMode == .grid { tool = .none } }
+    }
+    /// Thumbnails of the roll (sidebar + grid).
+    let thumbnails = ThumbnailStore()
+    /// Columns of the grid as laid out (for ↑/↓ navigation).
+    @ObservationIgnored var gridColumns = 1
+    @ObservationIgnored var thumbnailTask: Task<Void, Never>?
+    @ObservationIgnored var thumbnailDirty = Set<URL>()
+
     private(set) var folderURL: URL?
     private(set) var files: [URL] = []
 
@@ -32,16 +46,17 @@ final class AppModel {
             markDirty(Set(recipes.keys))
             saveRoll()
             scheduleRollBaseRemeasure()
+            scheduleThumbnails(Set(files))
         }
     }
 
     // MARK: - Roll (shared base, pooled analysis) — `NegConv Roll.json`
 
     /// Film base shared by the roll; frames without their own sample use it.
-    private(set) var rollBase: RollBase? { didSet { if oldValue != rollBase { saveRoll() } } }
+    private(set) var rollBase: RollBase? { didSet { if oldValue != rollBase { saveRoll(); scheduleThumbnails(Set(files)) } } }
     /// Frames (file names) left out of the roll analysis.
     private(set) var rollExcluded: Set<String> = [] { didSet { if oldValue != rollExcluded { saveRoll() } } }
-    private(set) var rollAnalysis: RollAnalysis? { didSet { if oldValue != rollAnalysis { saveRoll() } } }
+    private(set) var rollAnalysis: RollAnalysis? { didSet { if oldValue != rollAnalysis { saveRoll(); scheduleThumbnails(Set(files)) } } }
 
     private(set) var isAnalysing = false
     private(set) var analysisProgress: Double = 0
@@ -57,6 +72,7 @@ final class AppModel {
             var changed = Set<URL>()
             for (k, v) in recipes where oldValue[k] != v { changed.insert(k) }
             markDirty(changed)
+            scheduleThumbnails(changed)
         }
     }
 
@@ -875,10 +891,16 @@ final class AppModel {
     func handle(_ event: NSEvent) -> Bool {
         guard NSApp.keyWindow != nil else { return false }
         // The Help window is just text: its keys and scrolls must not drive the editor.
-        if (event.window ?? NSApp.keyWindow)?.title == HelpWindow.title { return false }
+        // Neither may the Retag window's.
+        let windowTitle = (event.window ?? NSApp.keyWindow)?.title
+        if windowTitle == HelpWindow.title || windowTitle == RetagWindow.title { return false }
         let isKey = event.type == .keyDown || event.type == .keyUp
         // Typing in a text field (shooting data, slider values): never steal its keys.
         if isKey, NSApp.keyWindow?.firstResponder is NSText { return false }
+
+        // G / E switch grid and loupe; in the grid only its own keys apply.
+        if isKey, handleGridKey(event) { return true }
+        if viewMode == .grid { return false }
 
         // Return / Enter applies the crop.
         if event.type == .keyDown, tool == .crop, event.keyCode == 36 || event.keyCode == 76 {
@@ -1436,7 +1458,7 @@ final class AppModel {
     /// `r` with its film base and (if auto) density points measured on `image`, a decode of its
     /// own frame — as `refreshInversion` does for the open frame, without side effects.
     /// nil when the frame has no base of its own and no roll base applies.
-    static func measuredInversion(_ recipe: EditRecipe, on image: CIImage,
+    nonisolated static func measuredInversion(_ recipe: EditRecipe, on image: CIImage,
                                   rollBase: SIMD3<Float>?, roll: RollAnalysis?) -> EditRecipe? {
         var r = recipe
         if let src = r.inversion.baseRect {
@@ -1512,6 +1534,9 @@ final class AppModel {
         cancelAnalysis()
         rollBaseTask?.cancel()
         histogramCache = [:]
+        thumbnails.reset()
+        thumbnailTask?.cancel()
+        thumbnailDirty = []
         folderURL = url
         tool = .none
         exportStatus = nil
@@ -1543,6 +1568,7 @@ final class AppModel {
         suppressSave = false
 
         selection = files.first
+        scheduleThumbnails(Set(files), delay: .zero)
         if files.isEmpty {
             preview = nil
             errorMessage = "No RAW files (NEF, CR2, CR3, RAF) in \(url.lastPathComponent)."
